@@ -24,7 +24,7 @@ ensured by the Django middleware.
 For cross site request protection will be used secret key from VK
 """
 @csrf_exempt #exempt index() function from built-in Django protection
-def index(request): #url: https://mybot.mysite.ru/vk_bot/
+def bot(request): #url: https://mybot.mysite.ru/vk_bot/
     if (request.method == "POST"):
         data = json.loads(request.body)# take POST request from auto-generated variable <request.body> in json format
         if (data['secret'] == secret_key):# if json request contain secret key and it's equal my secret key
