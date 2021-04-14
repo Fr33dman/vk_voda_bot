@@ -23,7 +23,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'u-elxo3o-@1)6=$a8q(8&+un0k)#kff5f7e$(8w6hj6a1bm&m&'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["vk.fr33dman.ru"]
 

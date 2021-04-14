@@ -4,7 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
 from django.http import HttpResponse
 from bot_config import * # import token, confirmation_token and over constants from bot_config.py
-
+import random, requests
 import json, vk # vk is library from VK
 
 """
@@ -41,12 +41,12 @@ def bot(request): #url: https://mybot.mysite.ru/vk_bot/
                 # confirmation_token from bot_config.py
                 return HttpResponse(confirmation_token, content_type="text/plain", status=200)
             if (data['type'] == 'message_new'):# if VK server send a message
-                session = vk.Session()
-                api = vk.API(session, v=5.5)
-                user_id = data['object']['user_id']
-
+            
+                user_id = data['object']['message']['from_id']
+                random_id = random.randint(1, 2147483648)
                 # token from bot_config.py
-                api.messages.send(access_token = token, user_id = str(user_id), message = "Hello, I'm bot!")
-                return HttpResponse('Бот работает)', content_type="text/plain", status=200)
+                requests.get('https://api.vk.com/method/messages.send', params={'access_token': token, 'user_id': str(user_id), 'random_id':str(random_id), 'message': "пошел нахуй этот бекенд ебаный я блять программист нейросетей а не вот этой хуйни", 'v': '5.130'})
+
+                return HttpResponse('ok', content_type="text/plain", status=200)
     else:
-        return HttpResponse('see you :)')
+        return HttpResponse('see you ;)')
