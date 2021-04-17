@@ -77,8 +77,13 @@ WSGI_APPLICATION = 'webhook.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE':   'django.db.backends.mysql',
+        'NAME':     'fr33dman',
+        'USER':     'fr33dman',
+        'PASSWORD': 'Razbok2002',
+        'HOST':     '77.222.40.7',
+        'PORT':     '3306',
+        'CONN_MAX_AGE': None
     }
 }
 
@@ -107,7 +112,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Russia/Moscow'
 
 USE_I18N = True
 

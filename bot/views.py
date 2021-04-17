@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
+
 from __future__ import unicode_literals
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
 from django.http import HttpResponse
 from bot_config import * # import token, confirmation_token and over constants from bot_config.py
+from bot_utils import vkbot, keyboard, button
 import random, requests
-import json, vk # vk is library from VK
+import json# vk is library from VK
 
 """
-Using VK Callback API version 5.5
+Using VK Callback API version 5.130
 For more ditalies visit https://vk.com/dev/callback_api
 """
 
@@ -23,6 +25,27 @@ Decorator <@csrf_exempt> marks a view as being exempt from the protection
 ensured by the Django middleware.
 For cross site request protection will be used secret key from VK
 """
+
+vk_bot = vkbot(token)
+
+vk_bot.setlevels(1)
+@vk_bot.handle(0, ('Начать',))
+def start():
+    kbrd = keyboard()
+    btn_order = button(type='text', payload='order', label='Заказать')
+    btn_order.set_color('secondary')
+    kbrd.add_wide_button(btn_order)
+    return 'Приветствую тебя! Я бот-доставщик воды в Глазове) Если хочешь заказать жми кнопку Заказ либо пиши мне слово Заказ)', 0, kbrd.collect()
+
+@vk_bot.handle(0)
+def zero_default():
+    kbrd = keyboard()
+    btn_order = button(type='text', payload='order', label='Заказать')
+    btn_order.set_color('secondary')
+    kbrd.add_wide_button(btn_order)
+    return 'Приветствую тебя! Я бот-доставщик воды в Глазове) Если хочешь заказать жми кнопку Заказ либо пиши мне слово Заказ)', 0, kbrd.collect()
+
+
 @csrf_exempt #exempt index() function from built-in Django protection
 def bot(request): #url: https://mybot.mysite.ru/vk_bot/
     if (request.method == "POST"):
@@ -41,12 +64,7 @@ def bot(request): #url: https://mybot.mysite.ru/vk_bot/
                 # confirmation_token from bot_config.py
                 return HttpResponse(confirmation_token, content_type="text/plain", status=200)
             if (data['type'] == 'message_new'):# if VK server send a message
-            
-                user_id = data['object']['message']['from_id']
-                random_id = random.randint(1, 2147483648)
-                # token from bot_config.py
-                requests.get('https://api.vk.com/method/messages.send', params={'access_token': token, 'user_id': str(user_id), 'random_id':str(random_id), 'message': "пошел нахуй этот бекенд ебаный я блять программист нейросетей а не вот этой хуйни", 'v': '5.130'})
-
+                vk_bot.answer(data)
                 return HttpResponse('ok', content_type="text/plain", status=200)
     else:
         return HttpResponse('see you ;)')
