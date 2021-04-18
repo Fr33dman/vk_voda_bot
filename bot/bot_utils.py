@@ -179,12 +179,13 @@ class handling_messages():
         :param unicode messages:
         :return:
         '''
-        for message in messages:
-            self.__steps[str(lvl)]['handling_messages'].append(message)
-        self.__steps[str(lvl)]['funcs'].append(func)
-
-    def default_handler(self, lvl, func):
-        self.__steps[str(lvl)]['default_func'] = func
+        if messages:
+            self.__steps[str(lvl)]['handling_messages'].append([])
+            for message in messages:
+                self.__steps[str(lvl)]['handling_messages'][-1].append(message)
+            self.__steps[str(lvl)]['funcs'].append(func)
+        else:
+            self.__steps[str(lvl)]['default_func'] = func
 
     def find_message(self, lvl, message):
         try:
@@ -220,10 +221,7 @@ class vkbot():
         '''
         def wrapper(func):
             def wrapped():
-                if messages:
-                    self.__handling_messages.handler(level, func, *messages)
-                else:
-                    self.__handling_messages.default_handler(level, func)
+                self.__handling_messages.handler(level, func, *messages)
             return wrapped()
         return wrapper
 
@@ -232,6 +230,7 @@ class vkbot():
         :param int level: adds new level of handling messages
         :return: None
         '''
+        del self.__handling_messages
         self.__handling_messages = handling_messages(level)
 
     def find_func(self, level, message):
@@ -250,34 +249,49 @@ class vkbot():
         method = 'messages.send'
         user_id = data['object']['message']['from_id']
         try:
-            user = User_level.objects.filter(user_id=int(user_id))
+            user = User_level.objects.get(user_id=int(user_id))
+            level = user.level
+            print 'no error2'
         except:
+            print 'error2'
             user = User_level(user_id=int(user_id), level=0)
+            level = 0
             user.save()
-        level = user.level
         func = self.find_func(level=level, message=data['object']['message']['text'])
         try:
-            message, keyboard, newlevel = func()
+            message, newlevel, keyboard = func(data)
+            print keyboard
             random_id = random.randint(1, 9223372036854775807)
-            data = {'user_id': str(user_id),
+            dataanswer = {'user_id': str(user_id),
                     'random_id': str(random_id),
                     'message': message,
                     'keyboard': keyboard,
                     'access_token': self.__token,
                     'v': '5.130'}
-            data = json.dumps(data)
-            requests.post(self.__url + method, data=data)
+            req = requests.get(self.__url + method, params=dataanswer)
             user.level = newlevel
             user.save()
+            print req.text
         except:
-            message, newlevel = func()
+            message, newlevel = func(data)
             random_id = random.randint(1, 9223372036854775807)
-            data = {'user_id': str(user_id),
+            dataanswer = {'user_id': str(user_id),
                     'random_id': str(random_id),
                     'message': message,
                     'access_token': self.__token,
                     'v': '5.130'}
-            data = json.dumps(data)
-            requests.post(self.__url + method, data=data)
+            requests.get(self.__url + method, params=dataanswer)
             user.level = newlevel
             user.save()
+
+    def Erroranswer(self, data):
+        method = 'messages.send'
+        user_id = data['object']['message']['from_id']
+        random_id = random.randint(1, 9223372036854775807)
+        message = 'Sorry we have some problems on server'
+        dataanswer = {'user_id': str(user_id),
+                'random_id': str(random_id),
+                'message': message,
+                'access_token': self.__token,
+                'v': '5.130'}
+        requests.get(self.__url + method, params=dataanswer)

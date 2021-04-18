@@ -28,22 +28,35 @@ For cross site request protection will be used secret key from VK
 
 vk_bot = vkbot(token)
 
-vk_bot.setlevels(1)
-@vk_bot.handle(0, ('Начать',))
-def start():
+vk_bot.setlevels(5)
+@vk_bot.handle(0, 'Start')
+def start(data):
     kbrd = keyboard()
     btn_order = button(type='text', payload='order', label='Заказать')
     btn_order.set_color('secondary')
     kbrd.add_wide_button(btn_order)
-    return 'Приветствую тебя! Я бот-доставщик воды в Глазове) Если хочешь заказать жми кнопку Заказ либо пиши мне слово Заказ)', 0, kbrd.collect()
+    return 'Приветствую тебя! Я бот-доставщик воды в Глазове) Если хочешь заказать жми кнопку Заказ либо пиши мне слово Заказ)', 0
 
 @vk_bot.handle(0)
-def zero_default():
+def zero_default(data):
     kbrd = keyboard()
     btn_order = button(type='text', payload='order', label='Заказать')
     btn_order.set_color('secondary')
     kbrd.add_wide_button(btn_order)
-    return 'Приветствую тебя! Я бот-доставщик воды в Глазове) Если хочешь заказать жми кнопку Заказ либо пиши мне слово Заказ)', 0, kbrd.collect()
+    return 'хуесос ты ебаный иди нахуй', 0
+
+@vk_bot.handle(0, 'Order', 'Заказ')
+def order(data):
+    return 'Давай знакомиться, пришли мне свой номер чтобы я мог тебя узнать)', 1
+
+@vk_bot.handle(1)
+def first_default(data):
+    message = data['object']['message']['text']
+    if (len(message) == 11) and message.isdigit:
+        if message[0] == '8':
+            return 'Хорошо, теперь выбери что ты хочешь заказать', 2
+    else:
+        return 'Я тебя не понимаю(', 0
 
 
 @csrf_exempt #exempt index() function from built-in Django protection
@@ -64,7 +77,11 @@ def bot(request): #url: https://mybot.mysite.ru/vk_bot/
                 # confirmation_token from bot_config.py
                 return HttpResponse(confirmation_token, content_type="text/plain", status=200)
             if (data['type'] == 'message_new'):# if VK server send a message
-                vk_bot.answer(data)
+                try:
+                    vk_bot.answer(data)
+                except Exception as error:
+                    print error
+                    vk_bot.Erroranswer(data)
                 return HttpResponse('ok', content_type="text/plain", status=200)
     else:
         return HttpResponse('see you ;)')

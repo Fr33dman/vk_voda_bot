@@ -4,3 +4,5 @@ get-pip.py
 bot/test.py
 bot/SQLighter.py
 db.sqlite3
+webhook
+bot/log
