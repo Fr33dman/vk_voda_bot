@@ -251,16 +251,13 @@ class vkbot():
         try:
             user = User_level.objects.get(user_id=int(user_id))
             level = user.level
-            print 'no error2'
         except:
-            print 'error2'
             user = User_level(user_id=int(user_id), level=0)
             level = 0
             user.save()
         func = self.find_func(level=level, message=data['object']['message']['text'])
         try:
             message, newlevel, keyboard = func(data)
-            print keyboard
             random_id = random.randint(1, 9223372036854775807)
             dataanswer = {'user_id': str(user_id),
                     'random_id': str(random_id),
@@ -271,7 +268,6 @@ class vkbot():
             req = requests.get(self.__url + method, params=dataanswer)
             user.level = newlevel
             user.save()
-            print req.text
         except:
             message, newlevel = func(data)
             random_id = random.randint(1, 9223372036854775807)

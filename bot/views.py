@@ -80,7 +80,6 @@ def bot(request): #url: https://mybot.mysite.ru/vk_bot/
                 try:
                     vk_bot.answer(data)
                 except Exception as error:
-                    print error
                     vk_bot.Erroranswer(data)
                 return HttpResponse('ok', content_type="text/plain", status=200)
     else:
