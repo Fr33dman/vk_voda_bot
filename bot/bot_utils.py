@@ -28,7 +28,7 @@ class keyboard():
                 quit()
 
         else:
-            self.__one_time = 'true'
+            self.__one_time = True
 
         if 'inline' in kwargs:
             self.__inline = kwargs['inline']
@@ -259,10 +259,11 @@ class vkbot():
         try:
             message, newlevel, keyboard = func(data)
             random_id = random.randint(1, 9223372036854775807)
+            kbrd = json.dumps(keyboard)
             dataanswer = {'user_id': str(user_id),
                     'random_id': str(random_id),
                     'message': message,
-                    'keyboard': keyboard,
+                    'keyboard': kbrd,
                     'access_token': self.__token,
                     'v': '5.130'}
             req = requests.get(self.__url + method, params=dataanswer)

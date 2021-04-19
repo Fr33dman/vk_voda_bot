@@ -29,23 +29,31 @@ For cross site request protection will be used secret key from VK
 vk_bot = vkbot(token)
 
 vk_bot.setlevels(5)
-@vk_bot.handle(0, 'Start')
+
+for i in range(5):
+    @vk_bot.handle(i, 'Отмена', 'отменить', 'отмена', 'Отменить')
+    def cansel(data):
+        return '', 0
+
+@vk_bot.handle(0, 'Начать')
 def start(data):
     kbrd = keyboard()
-    btn_order = button(type='text', payload='order', label='Заказать')
+    btn_order = button(type='text', label='Заказать')
     btn_order.set_color('secondary')
+    btn_order.collect()
     kbrd.add_wide_button(btn_order)
-    return 'Приветствую тебя! Я бот-доставщик воды в Глазове) Если хочешь заказать жми кнопку Заказ либо пиши мне слово Заказ)', 0
+    return 'Приветствую тебя! Я бот-доставщик воды в Глазове) Если хочешь заказать жми кнопку Заказ либо пиши мне слово Заказ)', 0, kbrd.collect()
 
 @vk_bot.handle(0)
 def zero_default(data):
     kbrd = keyboard()
-    btn_order = button(type='text', payload='order', label='Заказать')
+    btn_order = button(type='text', label='Заказать')
     btn_order.set_color('secondary')
+    btn_order.collect()
     kbrd.add_wide_button(btn_order)
-    return 'хуесос ты ебаный иди нахуй', 0
+    return 'Приветствую тебя! Я бот-доставщик воды в Глазове) Если хочешь заказать жми кнопку Заказ либо пиши мне слово Заказ)', 0, kbrd.collect()
 
-@vk_bot.handle(0, 'Order', 'Заказ')
+@vk_bot.handle(0, 'Сделать заказ', 'Заказ', 'заказ', 'сделать заказ', 'хочу сделать заказ', 'хочу сделать заказ', 'сделать заказ', 'Заказать', 'заказать')
 def order(data):
     return 'Давай знакомиться, пришли мне свой номер чтобы я мог тебя узнать)', 1
 
@@ -55,8 +63,12 @@ def first_default(data):
     if (len(message) == 11) and message.isdigit:
         if message[0] == '8':
             return 'Хорошо, теперь выбери что ты хочешь заказать', 2
+    	else:
+          return 'Похоже ты неправильно ввел свой номер, попробуй еще раз)', 1
+    elif message.isdigit:
+    	return 'Похоже ты неправильно ввел свой номер, попробуй еще раз)', 1
     else:
-        return 'Я тебя не понимаю(', 0
+        return 'Я тебя не понимаю(', 1
 
 
 @csrf_exempt #exempt index() function from built-in Django protection
