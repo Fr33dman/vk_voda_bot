@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import requests, json
 import sys, random
 import logging
@@ -23,7 +25,7 @@ class keyboard():
         if 'one_time' in kwargs:
             self.__one_time = kwargs['one_time']
 
-            if self.__one_time != 'true' and self.__one_time != 'false':
+            if type(self.__one_time) != bool:
                 logging.warning('Param one_time must be boolean type')
                 quit()
 
@@ -33,12 +35,12 @@ class keyboard():
         if 'inline' in kwargs:
             self.__inline = kwargs['inline']
 
-            if self.__inline != 'ture' and self.__inline != 'false':
+            if type(self.__inline) != bool:
                 logging.warning('Param inline must be boolean type')
                 quit()
 
         else:
-            self.__inline = 'false'
+            self.__inline = False
 
         self.__buttons = []
         self.keybrd = {}
@@ -70,7 +72,7 @@ class keyboard():
         '''
         :return dict: collected keyboard
         '''
-        if self.__inline == 'false':
+        if self.__inline == False:
             self.keybrd = {'one_time': self.__one_time, 'buttons': self.__buttons}
             return self.keybrd
         else:
@@ -190,7 +192,7 @@ class handling_messages():
     def find_message(self, lvl, message):
         try:
             for mess in range(len(self.__steps[str(lvl)]['handling_messages'])):
-                if message in self.__steps[str(lvl)]['handling_messages'][mess]:
+                if message.lower() in self.__steps[str(lvl)]['handling_messages'][mess]:
                     return self.__steps[str(lvl)]['funcs'][mess]
             else:
                 try:

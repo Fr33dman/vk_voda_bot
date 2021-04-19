@@ -31,24 +31,38 @@ vk_bot = vkbot(token)
 vk_bot.setlevels(5)
 
 for i in range(5):
-    @vk_bot.handle(i, 'Отмена', 'отменить', 'отмена', 'Отменить')
+    @vk_bot.handle(i, 'отменить', 'отмена')
     def cansel(data):
-        return '', 0
+      	kbrd = keyboard()
+    	btn_order = button(type='text', label='Заказать')
+    	btn_order.set_color('primary')
+    	btn_order.collect()
+    	kbrd.add_wide_button(btn_order)
+        return '', 0, kbrd.collect()
 
-@vk_bot.handle(0, 'Начать')
+@vk_bot.handle(0, 'начать')
 def start(data):
     kbrd = keyboard()
     btn_order = button(type='text', label='Заказать')
-    btn_order.set_color('secondary')
+    btn_order.set_color('primary')
     btn_order.collect()
     kbrd.add_wide_button(btn_order)
-    return 'Приветствую тебя! Я бот-доставщик воды в Глазове) Если хочешь заказать жми кнопку Заказ либо пиши мне слово Заказ)', 0, kbrd.collect()
+    
+    btn_back = button(type='text', label='Назад')
+    btn_back.set_color('secondary')
+    btn_back.collect()
+    btn_cansel = button(type='text', label='Отмена')
+    btn_cansel.set_color('negative')
+    btn_cansel.collect()
+    kbrd.add_multi_buttons(btn_back, btn_cansel)
+    
+    return 'Приветствую тебя! Я бот-доставщик воды в Глазове) Если хочешь заказать жми кнопку Заказать либо пиши мне слово Заказать)', 0, kbrd.collect()
 
 @vk_bot.handle(0)
 def zero_default(data):
     kbrd = keyboard()
     btn_order = button(type='text', label='Заказать')
-    btn_order.set_color('secondary')
+    btn_order.set_color('primary')
     btn_order.collect()
     kbrd.add_wide_button(btn_order)
     return 'Приветствую тебя! Я бот-доставщик воды в Глазове) Если хочешь заказать жми кнопку Заказ либо пиши мне слово Заказ)', 0, kbrd.collect()
@@ -63,13 +77,12 @@ def first_default(data):
     if (len(message) == 11) and message.isdigit:
         if message[0] == '8':
             return 'Хорошо, теперь выбери что ты хочешь заказать', 2
-    	else:
+        else:
           return 'Похоже ты неправильно ввел свой номер, попробуй еще раз)', 1
     elif message.isdigit:
-    	return 'Похоже ты неправильно ввел свой номер, попробуй еще раз)', 1
+        return 'Похоже ты неправильно ввел свой номер, попробуй еще раз)', 1
     else:
         return 'Я тебя не понимаю(', 1
-
 
 @csrf_exempt #exempt index() function from built-in Django protection
 def bot(request): #url: https://mybot.mysite.ru/vk_bot/
