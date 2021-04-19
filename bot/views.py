@@ -5,7 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
 from django.http import HttpResponse
 from bot_config import * # import token, confirmation_token and over constants from bot_config.py
-from bot_utils import vkbot, keyboard, button
+from bot_utils import *
 import random, requests
 import json# vk is library from VK
 
@@ -31,18 +31,24 @@ vk_bot = vkbot(token)
 vk_bot.setlevels(5)
 
 for i in range(5):
-    @vk_bot.handle(i, 'Отмена', 'отменить', 'отмена', 'Отменить')
+    @vk_bot.handle(i, 'отменить', 'отмена')
     def cansel(data):
         return '', 0
 
-@vk_bot.handle(0, 'Начать')
+for i in range(5):
+    @vk_bot.handle(i, 'назад', 'обратно')
+    def cansel(data):
+        return '', 0
+
+@vk_bot.handle(0, 'начать')
 def start(data):
     kbrd = keyboard()
     btn_order = button(type='text', label='Заказать')
-    btn_order.set_color('secondary')
+    btn_order.set_color('primary')
     btn_order.collect()
     kbrd.add_wide_button(btn_order)
-    return 'Приветствую тебя! Я бот-доставщик воды в Глазове) Если хочешь заказать жми кнопку Заказ либо пиши мне слово Заказ)', 0, kbrd.collect()
+    cansel_back_buttons(kbrd)
+    return 'Приветствую тебя! Я бот-доставщик воды в Глазове) Если хочешь заказать жми кнопку Заказать либо пиши мне слово Заказать)', 0, kbrd.collect()
 
 @vk_bot.handle(0)
 def zero_default(data):
@@ -51,6 +57,7 @@ def zero_default(data):
     btn_order.set_color('secondary')
     btn_order.collect()
     kbrd.add_wide_button(btn_order)
+    cansel_back_buttons(btn_order)
     return 'Приветствую тебя! Я бот-доставщик воды в Глазове) Если хочешь заказать жми кнопку Заказ либо пиши мне слово Заказ)', 0, kbrd.collect()
 
 @vk_bot.handle(0, 'Сделать заказ', 'Заказ', 'заказ', 'сделать заказ', 'хочу сделать заказ', 'хочу сделать заказ', 'сделать заказ', 'Заказать', 'заказать')
@@ -63,10 +70,10 @@ def first_default(data):
     if (len(message) == 11) and message.isdigit:
         if message[0] == '8':
             return 'Хорошо, теперь выбери что ты хочешь заказать', 2
-    	else:
+        else:
           return 'Похоже ты неправильно ввел свой номер, попробуй еще раз)', 1
     elif message.isdigit:
-    	return 'Похоже ты неправильно ввел свой номер, попробуй еще раз)', 1
+        return 'Похоже ты неправильно ввел свой номер, попробуй еще раз)', 1
     else:
         return 'Я тебя не понимаю(', 1
 

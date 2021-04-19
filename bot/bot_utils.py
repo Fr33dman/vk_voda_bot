@@ -190,7 +190,7 @@ class handling_messages():
     def find_message(self, lvl, message):
         try:
             for mess in range(len(self.__steps[str(lvl)]['handling_messages'])):
-                if message in self.__steps[str(lvl)]['handling_messages'][mess]:
+                if message.lower() in self.__steps[str(lvl)]['handling_messages'][mess]:
                     return self.__steps[str(lvl)]['funcs'][mess]
             else:
                 try:
@@ -292,3 +292,12 @@ class vkbot():
                 'access_token': self.__token,
                 'v': '5.130'}
         requests.get(self.__url + method, params=dataanswer)
+
+def cansel_back_buttons(keyboard):
+    btn_back = button(type='text', label='Назад')
+    btn_back.set_color('secondary')
+    btn_back.collect()
+    btn_cansel = button(type='text', label='Отменить')
+    btn_cansel.set_color('negative')
+    btn_cansel.collect()
+    keyboard.add_multi_buttons(btn_back, btn_cansel)
