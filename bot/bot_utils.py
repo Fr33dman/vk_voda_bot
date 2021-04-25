@@ -57,8 +57,8 @@ class keyboard():
         :param button args: only text and callback buttons allowed
         :return:
         '''
-        if len(args) > 4:
-            logging.warning('Max len of multi button is 4')
+        if len(args) > 5:
+            logging.warning('Max len of multi button is 5')
             quit()
 
         btns = []
@@ -283,11 +283,23 @@ class vkbot():
             user.level = newlevel
             user.save()
 
-    def Erroranswer(self, data):
+    def Erroranswer(self, data, err):
         method = 'messages.send'
         user_id = data['object']['message']['from_id']
         random_id = random.randint(1, 9223372036854775807)
-        message = 'Sorry we have some problems on server'
+        message = 'Sorry we have some problems on server ?{}?'.format(err.message)
+        dataanswer = {'user_id': str(user_id),
+                'random_id': str(random_id),
+                'message': message,
+                'access_token': self.__token,
+                'v': '5.130'}
+        requests.get(self.__url + method, params=dataanswer)
+    
+    def Debuganswer(self, data):
+        method = 'messages.send'
+        user_id = data['object']['message']['from_id']
+        random_id = random.randint(1, 9223372036854775807)
+        message = 'Бот на ремонте, обратитесь пожалуйста к оператору.',
         dataanswer = {'user_id': str(user_id),
                 'random_id': str(random_id),
                 'message': message,
