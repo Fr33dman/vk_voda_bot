@@ -51,15 +51,15 @@ For cross site request protection will be used secret key from VK
 
 vk_bot = vkbot(token)
 
-vk_bot.setlevels(17)
+vk_bot.setlevels(18)
 
-for i in range(17):
+for i in range(18):
     @vk_bot.handle(i, 'отменить', 'отмена')
     def cansel(data):
         kbrd = keyboard()
-        btn_cansel = button(type='text', label='Отмена')
-        btn_cansel.set_color('negative')
-        btn_cansel.collect()
+        btn_changeadress = button(type='text', label='Сменить адрес')
+        btn_changeadress.set_color('secondary')
+        btn_changeadress.collect()
         btn_changename = button(type='text', label='Сменить имя')
         btn_changename.set_color('secondary')
         btn_changename.collect()
@@ -75,8 +75,9 @@ for i in range(17):
         btn_call = button(type='text', label='Обратный звонок')
         btn_call.set_color('primary')
         btn_call.collect()
-        kbrd.add_multi_buttons(btn_makebasket, btn_products, btn_call)
-        kbrd.add_multi_buttons(btn_changename, btn_changenumber, btn_cansel)
+        kbrd.add_multi_buttons(btn_makebasket, btn_products)
+        kbrd.add_multi_buttons(btn_changenumber, btn_call)
+        kbrd.add_multi_buttons(btn_changename, btn_changeadress)
         return '=)', 0, kbrd.collect()
 
 
@@ -84,9 +85,9 @@ for i in range(17):
 def hi(data):
     user_id = data['object']['message']['from_id']
     kbrd = keyboard()
-    btn_cansel = button(type='text', label='Отмена')
-    btn_cansel.set_color('negative')
-    btn_cansel.collect()
+    btn_changeadress = button(type='text', label='Сменить адрес')
+    btn_changeadress.set_color('secondary')
+    btn_changeadress.collect()
     btn_changename = button(type='text', label='Сменить имя')
     btn_changename.set_color('secondary')
     btn_changename.collect()
@@ -102,8 +103,9 @@ def hi(data):
     btn_call = button(type='text', label='Обратный звонок')
     btn_call.set_color('primary')
     btn_call.collect()
-    kbrd.add_multi_buttons(btn_makebasket, btn_products, btn_call)
-    kbrd.add_multi_buttons(btn_changename, btn_changenumber, btn_cansel)
+    kbrd.add_multi_buttons(btn_makebasket, btn_products)
+    kbrd.add_multi_buttons(btn_changenumber, btn_call)
+    kbrd.add_multi_buttons(btn_changename, btn_changeadress)
     try:
         user = User.objects.get(user_id=int(user_id))
         name = user.name
@@ -118,8 +120,8 @@ def hi(data):
         except:
             user = User(user_id=int(user_id))
             user.save()
-            return 'Здравствуйте уважаемый клиент! Рады приветствовать вас! Здесь Вы можете сделать заказ воды. Заказывайте и наслаждайтесь качественной и безопасной водой!', 0, kbrd.collect()
-    return 'Здравствуйте {}! Рады приветствовать вас! Здесь Вы можете сделать заказ воды. Заказывайте и наслаждайтесь качественной и безопасной водой!'.format(
+            return 'Здравствуйте, уважаемый клиент! Рады приветствовать вас! Здесь Вы можете сделать заказ воды. Заказывайте и наслаждайтесь качественной и безопасной водой!', 0, kbrd.collect()
+    return 'Здравствуйте, {}! Рады приветствовать вас! Здесь Вы можете сделать заказ воды. Заказывайте и наслаждайтесь качественной и безопасной водой!'.format(
         name), 0, kbrd.collect()
 
 @vk_bot.handle(0, 'статус')
@@ -130,6 +132,32 @@ def check_status(data):
     btn_cansel.collect()
     kbrd.add_wide_button(btn_cansel)
     return 'Напишите номер заказа, статус которого вы хотите посмотреть', 16, kbrd.collect()
+
+@vk_bot.handle(0, 'сменить адрес')
+def change_adress(data):
+    user_id = data['object']['message']['from_id']
+    try:
+        user = User.objects.get(user_id=int(user_id))
+    except:
+        try:
+            params = {'user_ids': str(user_id), 'access_token': token, 'v': '5.130'}
+            user_info = requests.get('https://api.vk.com/method/users.get', params=params)
+            user_info = json.loads(user_info.text)['response'][0]
+            name = user_info['first_name'] + ' ' + user_info['last_name']
+            user = User(user_id=int(user_id), name=name)
+            user.save()
+        except:
+            user = User(user_id=int(user_id))
+            user.save()
+    kbrd = keyboard()
+    btn_cansel = button(type='text', label='Отмена')
+    btn_cansel.set_color('negative')
+    btn_cansel.collect()
+    btn_back = button(type='text', label='Назад')
+    btn_back.set_color('secondary')
+    btn_back.collect()
+    kbrd.add_multi_buttons(btn_back, btn_cansel)
+    return 'Укажите точный адрес, куда курьер привезет Вам воду: название улицы - номер дома - номер квартиры - этаж', 17, kbrd.collect()
 
 @vk_bot.handle(0, 'сменить имя')
 def change_name(data):
@@ -155,7 +183,7 @@ def change_name(data):
     btn_back.set_color('secondary')
     btn_back.collect()
     kbrd.add_multi_buttons(btn_back, btn_cansel)
-    return 'Укажите пожалуйста, как к вам можно обращаться)', 1, kbrd.collect()
+    return 'Укажите, пожалуйста, как к вам можно обращаться)', 1, kbrd.collect()
 
 
 @vk_bot.handle(0, 'товары')
@@ -175,9 +203,9 @@ def show_products(data):
             user = User(user_id=int(user_id))
             user.save()
     kbrd = keyboard()
-    btn_cansel = button(type='text', label='Отмена')
-    btn_cansel.set_color('negative')
-    btn_cansel.collect()
+    btn_changeadress = button(type='text', label='Сменить адрес')
+    btn_changeadress.set_color('secondary')
+    btn_changeadress.collect()
     btn_changename = button(type='text', label='Сменить имя')
     btn_changename.set_color('secondary')
     btn_changename.collect()
@@ -193,8 +221,9 @@ def show_products(data):
     btn_call = button(type='text', label='Обратный звонок')
     btn_call.set_color('primary')
     btn_call.collect()
-    kbrd.add_multi_buttons(btn_makebasket, btn_products, btn_call)
-    kbrd.add_multi_buttons(btn_changename, btn_changenumber, btn_cansel)
+    kbrd.add_multi_buttons(btn_makebasket, btn_products)
+    kbrd.add_multi_buttons(btn_changenumber, btn_call)
+    kbrd.add_multi_buttons(btn_changename, btn_changeadress)
     return 'Вода:\nСветлая 5л/18.9л\nСветлая здоровье 5л/18.9л', 0, kbrd.collect()
 
 
@@ -221,10 +250,10 @@ def make_basket(data):
     btn_back = button(type='text', label='Назад')
     btn_back.set_color('secondary')
     btn_back.collect()
-    btn_first_order = button(type='text', label='Заказываю впервые')
+    btn_first_order = button(type='text', label='Впервые')
     btn_first_order.set_color('primary')
     btn_first_order.collect()
-    btn_contract_id = button(type='text', label='По номеру договора')
+    btn_contract_id = button(type='text', label='По договору')
     btn_contract_id.set_color('primary')
     btn_contract_id.collect()
     btn_adress = button(type='text', label='По адресу')
@@ -232,7 +261,7 @@ def make_basket(data):
     btn_adress.collect()
     kbrd.add_multi_buttons(btn_contract_id, btn_adress, btn_first_order)
     kbrd.add_multi_buttons(btn_back, btn_cansel)
-    return 'Выберите подходящий для вас вариант заказа.', 3, kbrd.collect()
+    return 'Выберите подходящий для Вас вариант заказа', 3, kbrd.collect()
 
 
 @vk_bot.handle(0, 'обратный звонок')
@@ -243,9 +272,9 @@ def call_back(data):
         phone_number = str(user.phone_number)
         if phone_number.isdigit() and (len(phone_number) == 11) and (phone_number[0] == '8'):
             kbrd = keyboard()
-            btn_cansel = button(type='text', label='Отмена')
-            btn_cansel.set_color('negative')
-            btn_cansel.collect()
+            btn_changeadress = button(type='text', label='Сменить адрес')
+            btn_changeadress.set_color('secondary')
+            btn_changeadress.collect()
             btn_changename = button(type='text', label='Сменить имя')
             btn_changename.set_color('secondary')
             btn_changename.collect()
@@ -261,25 +290,26 @@ def call_back(data):
             btn_call = button(type='text', label='Обратный звонок')
             btn_call.set_color('primary')
             btn_call.collect()
-            kbrd.add_multi_buttons(btn_makebasket, btn_products, btn_call)
-            kbrd.add_multi_buttons(btn_changename, btn_changenumber, btn_cansel)
+            kbrd.add_multi_buttons(btn_makebasket, btn_products)
+            kbrd.add_multi_buttons(btn_changenumber, btn_call)
+            kbrd.add_multi_buttons(btn_changename, btn_changeadress)
             try:
                 call = Callback.objects.get(user_id=int(user_id))
                 if call.phone_number == phone_number:
-                    return 'Мы уже добавили вас в очередь, мы обязательно вам позвоним)', 0, kbrd.collect()
+                    return 'Мы уже добавили Вас в очередь, мы обязательно Вам позвоним)', 0, kbrd.collect()
                 else:
-                    return 'Мы добавили вас в очередь, мы обязательно вам позвоним)', 0, kbrd.collect()
+                    return 'Мы добавили Вас в очередь, мы обязательно Вам позвоним)', 0, kbrd.collect()
             except:
                 call = Callback(user_id=user_id, name=user.name, phone_number=phone_number)
                 call.save()
-            return 'Мы добавили вас в очередь, наши специалисты вам скоро позвонят)', 0, kbrd.collect()
+            return 'Мы добавили Вас в очередь, наши специалисты вам скоро позвонят)', 0, kbrd.collect()
         else:
             kbrd = keyboard()
             btn_back = button(type='text', label='Назад')
             btn_back.set_color('secondary')
             btn_back.collect()
             kbrd.add_wide_button(btn_back)
-            return 'Похоже, что у вас неправильно указан номер телефона, укажите его правильно пожалуйста', 2, kbrd.collect()
+            return 'Похоже, что у Вас неправильно указан номер телефона, укажите его правильно, пожалуйста', 2, kbrd.collect()
     except Exception:
         try:
             params = {'user_ids': str(user_id), 'access_token': token, 'v': '5.130'}
@@ -296,7 +326,7 @@ def call_back(data):
         btn_back.set_color('secondary')
         btn_back.collect()
         kbrd.add_wide_button(btn_back)
-        return 'Похоже что у вас не указан номер мобильного телефона, укажите его пожалуйста', 2, kbrd.collect()
+        return 'Похоже что у Вас не указан номер мобильного телефона, укажите его, пожалуйста', 2, kbrd.collect()
 
 
 @vk_bot.handle(0, 'сменить номер')
@@ -335,9 +365,9 @@ def save_name(data):
         user.name = name
         user.save()
         kbrd = keyboard()
-        btn_cansel = button(type='text', label='Отмена')
-        btn_cansel.set_color('negative')
-        btn_cansel.collect()
+        btn_changeadress = button(type='text', label='Сменить адрес')
+        btn_changeadress.set_color('secondary')
+        btn_changeadress.collect()
         btn_changename = button(type='text', label='Сменить имя')
         btn_changename.set_color('secondary')
         btn_changename.collect()
@@ -353,8 +383,9 @@ def save_name(data):
         btn_call = button(type='text', label='Обратный звонок')
         btn_call.set_color('primary')
         btn_call.collect()
-        kbrd.add_multi_buttons(btn_makebasket, btn_products, btn_call)
-        kbrd.add_multi_buttons(btn_changename, btn_changenumber, btn_cansel)
+        kbrd.add_multi_buttons(btn_makebasket, btn_products)
+        kbrd.add_multi_buttons(btn_changenumber, btn_call)
+        kbrd.add_multi_buttons(btn_changename, btn_changeadress)
         return 'Хорошо, {}'.format(name), 0, kbrd.collect()
     except:
         kbrd = keyboard()
@@ -368,9 +399,9 @@ def save_name(data):
 @vk_bot.handle(1, 'назад')
 def one_back(data):
     kbrd = keyboard()
-    btn_cansel = button(type='text', label='Отмена')
-    btn_cansel.set_color('negative')
-    btn_cansel.collect()
+    btn_changeadress = button(type='text', label='Сменить адрес')
+    btn_changeadress.set_color('secondary')
+    btn_changeadress.collect()
     btn_changename = button(type='text', label='Сменить имя')
     btn_changename.set_color('secondary')
     btn_changename.collect()
@@ -386,8 +417,9 @@ def one_back(data):
     btn_call = button(type='text', label='Обратный звонок')
     btn_call.set_color('primary')
     btn_call.collect()
-    kbrd.add_multi_buttons(btn_makebasket, btn_products, btn_call)
-    kbrd.add_multi_buttons(btn_changename, btn_changenumber, btn_cansel)
+    kbrd.add_multi_buttons(btn_makebasket, btn_products)
+    kbrd.add_multi_buttons(btn_changenumber, btn_call)
+    kbrd.add_multi_buttons(btn_changename, btn_changeadress)
     return '<--', 0, kbrd.collect()
 
 
@@ -401,9 +433,9 @@ def save_phone_number(data):
             user.phone_number = phone_number
             user.save()
             kbrd = keyboard()
-            btn_cansel = button(type='text', label='Отмена')
-            btn_cansel.set_color('negative')
-            btn_cansel.collect()
+            btn_changeadress = button(type='text', label='Сменить адрес')
+            btn_changeadress.set_color('secondary')
+            btn_changeadress.collect()
             btn_changename = button(type='text', label='Сменить имя')
             btn_changename.set_color('secondary')
             btn_changename.collect()
@@ -419,8 +451,9 @@ def save_phone_number(data):
             btn_call = button(type='text', label='Обратный звонок')
             btn_call.set_color('primary')
             btn_call.collect()
-            kbrd.add_multi_buttons(btn_makebasket, btn_products, btn_call)
-            kbrd.add_multi_buttons(btn_changename, btn_changenumber, btn_cansel)
+            kbrd.add_multi_buttons(btn_makebasket, btn_products)
+            kbrd.add_multi_buttons(btn_changenumber, btn_call)
+            kbrd.add_multi_buttons(btn_changename, btn_changeadress)
             return 'Хорошо, теперь ваш номер {}'.format(phone_number), 0, kbrd.collect()
         else:
             return 'Похоже вы неправильно ввели номер, попробуйте снова)', 2
@@ -436,9 +469,9 @@ def save_phone_number(data):
 @vk_bot.handle(2, 'назад')
 def two_back(data):
     kbrd = keyboard()
-    btn_cansel = button(type='text', label='Отмена')
-    btn_cansel.set_color('negative')
-    btn_cansel.collect()
+    btn_changeadress = button(type='text', label='Сменить адрес')
+    btn_changeadress.set_color('secondary')
+    btn_changeadress.collect()
     btn_changename = button(type='text', label='Сменить имя')
     btn_changename.set_color('secondary')
     btn_changename.collect()
@@ -454,17 +487,18 @@ def two_back(data):
     btn_call = button(type='text', label='Обратный звонок')
     btn_call.set_color('primary')
     btn_call.collect()
-    kbrd.add_multi_buttons(btn_makebasket, btn_products, btn_call)
-    kbrd.add_multi_buttons(btn_changename, btn_changenumber, btn_cansel)
+    kbrd.add_multi_buttons(btn_makebasket, btn_products)
+    kbrd.add_multi_buttons(btn_changenumber, btn_call)
+    kbrd.add_multi_buttons(btn_changename, btn_changeadress)
     return '<--', 0, kbrd.collect()
 
 
 @vk_bot.handle(3, 'назад')
 def three_back(data):
     kbrd = keyboard()
-    btn_cansel = button(type='text', label='Отмена')
-    btn_cansel.set_color('negative')
-    btn_cansel.collect()
+    btn_changeadress = button(type='text', label='Сменить адрес')
+    btn_changeadress.set_color('secondary')
+    btn_changeadress.collect()
     btn_changename = button(type='text', label='Сменить имя')
     btn_changename.set_color('secondary')
     btn_changename.collect()
@@ -480,12 +514,13 @@ def three_back(data):
     btn_call = button(type='text', label='Обратный звонок')
     btn_call.set_color('primary')
     btn_call.collect()
-    kbrd.add_multi_buttons(btn_makebasket, btn_products, btn_call)
-    kbrd.add_multi_buttons(btn_changename, btn_changenumber, btn_cansel)
+    kbrd.add_multi_buttons(btn_makebasket, btn_products)
+    kbrd.add_multi_buttons(btn_changenumber, btn_call)
+    kbrd.add_multi_buttons(btn_changename, btn_changeadress)
     return '<--', 0, kbrd.collect()
 
 
-@vk_bot.handle(3, 'заказываю впервые')
+@vk_bot.handle(3, 'заказываю впервые', 'впервые')
 def first_order(data):
     user_id = data['object']['message']['from_id']
     user = User.objects.get(user_id=int(user_id))
@@ -520,7 +555,7 @@ def first_order(data):
         return 'Укажите точный адрес, куда курьер привезет Вам воду: название улицы - номер дома - номер квартиры - этаж', 5, kbrd.collect()
 
 
-@vk_bot.handle(3, 'по номеру договора')
+@vk_bot.handle(3, 'по номеру договора', 'по договору')
 def by_contract_id(data):
     user_id = data['object']['message']['from_id']
     user = User.objects.get(user_id=int(user_id))
@@ -560,7 +595,7 @@ def by_contract_id(data):
         btn_back.set_color('secondary')
         btn_back.collect()
         kbrd.add_multi_buttons(btn_back, btn_cansel)
-        return 'Укажите номер вашего договора: ~формат неизвестен~`', 4, kbrd.collect()
+        return 'Укажите номер вашего договора: ****', 4, kbrd.collect()
 
 
 @vk_bot.handle(3, 'по адресу')
@@ -605,10 +640,10 @@ def three_default(data):
     btn_back = button(type='text', label='Назад')
     btn_back.set_color('secondary')
     btn_back.collect()
-    btn_first_order = button(type='text', label='Заказываю впервые')
+    btn_first_order = button(type='text', label='Впервые')
     btn_first_order.set_color('primary')
     btn_first_order.collect()
-    btn_contract_id = button(type='text', label='По номеру договора')
+    btn_contract_id = button(type='text', label='По договору')
     btn_contract_id.set_color('primary')
     btn_contract_id.collect()
     btn_adress = button(type='text', label='По адресу')
@@ -616,14 +651,14 @@ def three_default(data):
     btn_adress.collect()
     kbrd.add_multi_buttons(btn_contract_id, btn_adress, btn_first_order)
     kbrd.add_multi_buttons(btn_back, btn_cansel)
-    return 'Выберите подходящий для вас вариант заказа.', 3, kbrd.collect()
+    return 'Выберите подходящий для Вас вариант заказа', 3, kbrd.collect()
 
 
 @vk_bot.handle(4)
 def save_contract_id(data):
     user_id = data['object']['message']['from_id']
     contract_id = data['object']['message']['text']
-    if contract_id.isdigit() and len(contract_id) <= 10:
+    if contract_id.isdigit() and len(contract_id) != 4:
         user = User.objects.get(user_id=int(user_id))
         user.contract_id = int(contract_id)
         user.save()
@@ -661,7 +696,7 @@ def save_contract_id(data):
         btn_back.set_color('secondary')
         btn_back.collect()
         kbrd.add_multi_buttons(btn_back, btn_cansel)
-        return 'Номер вашего договора невалиден, введите еще раз)`', 4, kbrd.collect()
+        return 'Номер вашего договора невалиден, введите еще раз)', 4, kbrd.collect()
 
 
 @vk_bot.handle(4, 'назад')
@@ -673,10 +708,10 @@ def four_back(data):
     btn_back = button(type='text', label='Назад')
     btn_back.set_color('secondary')
     btn_back.collect()
-    btn_first_order = button(type='text', label='Заказываю впервые')
+    btn_first_order = button(type='text', label='Впервые')
     btn_first_order.set_color('primary')
     btn_first_order.collect()
-    btn_contract_id = button(type='text', label='По номеру договора')
+    btn_contract_id = button(type='text', label='По договору')
     btn_contract_id.set_color('primary')
     btn_contract_id.collect()
     btn_adress = button(type='text', label='По адресу')
@@ -684,7 +719,7 @@ def four_back(data):
     btn_adress.collect()
     kbrd.add_multi_buttons(btn_contract_id, btn_adress, btn_first_order)
     kbrd.add_multi_buttons(btn_back, btn_cansel)
-    return 'Выберите подходящий для вас вариант заказа.', 3, kbrd.collect()
+    return 'Выберите подходящий для Вас вариант заказа', 3, kbrd.collect()
 
 
 @vk_bot.handle(5, 'назад')
@@ -696,10 +731,10 @@ def five_back(data):
     btn_back = button(type='text', label='Назад')
     btn_back.set_color('secondary')
     btn_back.collect()
-    btn_first_order = button(type='text', label='Заказываю впервые')
+    btn_first_order = button(type='text', label='Впервые')
     btn_first_order.set_color('primary')
     btn_first_order.collect()
-    btn_contract_id = button(type='text', label='По номеру договора')
+    btn_contract_id = button(type='text', label='По договору')
     btn_contract_id.set_color('primary')
     btn_contract_id.collect()
     btn_adress = button(type='text', label='По адресу')
@@ -707,7 +742,7 @@ def five_back(data):
     btn_adress.collect()
     kbrd.add_multi_buttons(btn_contract_id, btn_adress, btn_first_order)
     kbrd.add_multi_buttons(btn_back, btn_cansel)
-    return 'Выберите подходящий для вас вариант заказа.', 3, kbrd.collect()
+    return 'Выберите подходящий для Вас вариант заказа', 3, kbrd.collect()
 
 
 @vk_bot.handle(5)
@@ -875,7 +910,7 @@ def add_size(data):
     btn_back.set_color('secondary')
     btn_back.collect()
     kbrd.add_multi_buttons(btn_back, btn_cansel)
-    return 'Какое колличество бутылок вы хотите?:', 9, kbrd.collect()
+    return 'Какое колличество бутылок вы хотите?', 9, kbrd.collect()
 
 
 @vk_bot.handle(8, 'назад')
@@ -905,19 +940,30 @@ def add_water_number(data):
     user_id = data['object']['message']['from_id']
     message = str(data['object']['message']['text'])
     if message.isdigit():
-        basket = Basket.objects.get(user_id=int(user_id))
-        basket.products = basket.products + 'x{}'.format(message)
-        basket.save()
-        kbrd = keyboard(inline=True)
-        btn_cash = button(type='text', label='Наличные')
-        btn_cash.collect()
-        btn_card = button(type='text', label='Картой')
-        btn_card.collect()
-        btn_ticket = button(type='text', label='По счету для юр лиц')
-        btn_ticket.collect()
-        kbrd.add_multi_buttons(btn_cash, btn_card)
-        kbrd.add_wide_button(btn_ticket)
-        return 'Выберите форму оплаты из нижеперечисленных:', 10, kbrd.collect()
+        if int(message) > 0:
+            basket = Basket.objects.get(user_id=int(user_id))
+            basket.products = basket.products + 'x{}'.format(message)
+            basket.save()
+            kbrd = keyboard(inline=True)
+            btn_cash = button(type='text', label='Наличные')
+            btn_cash.collect()
+            btn_card = button(type='text', label='Картой')
+            btn_card.collect()
+            btn_ticket = button(type='text', label='По счету для юр лиц')
+            btn_ticket.collect()
+            kbrd.add_multi_buttons(btn_cash, btn_card)
+            kbrd.add_wide_button(btn_ticket)
+            return 'Выберите форму оплаты из нижеперечисленных:', 10, kbrd.collect()
+        else:
+            kbrd = keyboard()
+            btn_cansel = button(type='text', label='Отмена')
+            btn_cansel.set_color('negative')
+            btn_cansel.collect()
+            btn_back = button(type='text', label='Назад')
+            btn_back.set_color('secondary')
+            btn_back.collect()
+            kbrd.add_multi_buttons(btn_back, btn_cansel)
+            return 'Похоже Вы неправильно ввели колличество, попробуйте еще раз', 9, kbrd.collect()
     else:
         kbrd = keyboard()
         btn_cansel = button(type='text', label='Отмена')
@@ -927,7 +973,7 @@ def add_water_number(data):
         btn_back.set_color('secondary')
         btn_back.collect()
         kbrd.add_multi_buttons(btn_back, btn_cansel)
-        return 'Какое колличество бутылок вы хотите?', 9, kbrd.collect()
+        return 'Похоже Вы неправильно ввели колличество, попробуйте еще раз', 9, kbrd.collect()
 
 
 @vk_bot.handle(9, 'назад')
@@ -961,40 +1007,40 @@ def save_pay(data):
         if region == 'старый':
             region_time = times['old_region_time']
             day_allowed = allowed_days['old_region_time']
-            if ((region_time[-1].hour - now.hour) < 4) and (today in day_allowed):
+            if ((region_time[-1].hour - now.hour) > 4) and (today in day_allowed):
                 today_allow = True
             else:
                 today_allow = False
         elif region == 'новый':
             region_time = times['new_region_time']
             day_allowed = allowed_days['new_region_time']
-            if ((region_time[-1].hour - now.hour) < 4) and (today in day_allowed):
+            if ((region_time[-1].hour - now.hour) > 4) and (today in day_allowed):
                 today_allow = True
             else:
                 today_allow = False
         elif region == 'центральный':
             region_time = times['center_region_time']
             day_allowed = allowed_days['center_region_time']
-            if ((region_time[-1].hour - now.hour) < 4) and (today in day_allowed):
+            if ((region_time[-1].hour - now.hour) > 4) and (today in day_allowed):
                 today_allow = True
             else:
                 today_allow = False
         elif region == 'птф':
             region_time = times['PTF_region_time']
             day_allowed = allowed_days['PTF_region_time']
-            if ((region_time[-1].hour - now.hour) < 4) and (today in day_allowed):
+            if ((region_time[-1].hour - now.hour) > 4) and (today in day_allowed):
                 today_allow = True
             else:
                 today_allow = False
         elif region == 'штанигурт':
             region_time = times['shtanigurt_region_time']
             day_allowed = allowed_days['shtanigurt_region_time']
-            if ((region_time[-1].hour - now.hour) < 4) and (today in day_allowed):
+            if ((region_time[-1].hour - now.hour) > 4) and (today in day_allowed):
                 today_allow = True
             else:
                 today_allow = False
         else:
-            return 'Кажется где то ты повернул не туда, ты не должен быть тут, пройди цикл заново пожалуйста)', 0
+            return 'Кажется где-то ты повернул не туда, ты не должен быть тут, пройди цикл заново пожалуйста)', 0
         kbrd = keyboard(inline=True)
         if today_allow:
             btn_today = button(type='text', label='Сегодня')
@@ -1068,7 +1114,48 @@ def ten_back(data):
     btn_back.set_color('secondary')
     btn_back.collect()
     kbrd.add_multi_buttons(btn_back, btn_cansel)
-    return 'Какое колличество бутылок вы хотите?', 9, kbrd.collect()
+    return 'Какое колличество бутылок Вы хотите?', 9, kbrd.collect()
+
+@vk_bot.handle(11, 'сегодня')
+def choose_today(data):
+    user_id = data['object']['message']['from_id']
+    message = data['object']['message']['text']
+    user = User.objects.get(user_id=int(user_id))
+    region = user.adress.split(', ')[-1].split(' - ')[-1]
+    basket = Basket.objects.get(user_id=int(user_id))
+    months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    today = time.ctime(time.time())
+    basket.delivery_time = today[4:10]
+    basket.save()
+    delivery_date = datetime.date.today()
+    if region == 'старый':
+        region_time = times['old_region_time']
+        region_time_period = time_periods['old_region_time']
+    elif region == 'новый':
+        region_time = times['new_region_time']
+        region_time_period = time_periods['new_region_time']
+    elif region == 'центральный':
+        region_time = times['center_region_time']
+        region_time_period = time_periods['center_region_time']
+    elif region == 'птф':
+        region_time = times['PTF_region_time']
+        region_time_period = time_periods['PTF_region_time']
+    elif region == 'штанигурт':
+        region_time = times['shtanigurt_region_time']
+        region_time_period = time_periods['shtanigurt_region_time']
+    else:
+        return 'Что-то пошло не так, попробуй еще раз пожалуйста)', 0
+    now = datetime.datetime.now()
+    kbrd = keyboard(inline=True)
+    for index in range(len(region_time)):
+        if (region_time[index].hour - now.hour) > 4:
+            for periond in region_time_period[index:]:
+                btn_time = button(type='text', label=periond)
+                btn_time.collect()
+                kbrd.add_wide_button(btn_time)
+            return 'Выберите время доставки на сегодня:', 12, kbrd.collect()
+        else:
+            return 'На сегодня нет доставки, выберите пожалуйста другой день', 11
 
 @vk_bot.handle(11)
 def choose_date(data):
@@ -1128,7 +1215,7 @@ def choose_date(data):
             btn_back.set_color('secondary')
             btn_back.collect()
             kbrd.add_multi_buttons(btn_back, btn_cansel)
-            return 'Вы не выбрали время, попробуйте еще раз', 11, kbrd.collect()
+            return 'Вы не выбрали дату, попробуйте еще раз', 11, kbrd.collect()
     except:
         kbrd = keyboard()
         btn_cansel = button(type='text', label='Отмена')
@@ -1138,7 +1225,7 @@ def choose_date(data):
         btn_back.set_color('secondary')
         btn_back.collect()
         kbrd.add_multi_buttons(btn_back, btn_cansel)
-        return 'Вы не выбрали время, попробуйте еще раз', 11, kbrd.collect()
+        return 'Вы не выбрали дату, попробуйте еще раз', 11, kbrd.collect()
 
 @vk_bot.handle(11, 'назад')
 def eleven_back(data):
@@ -1352,6 +1439,39 @@ def add_comment(data):
     kbrd.add_multi_buttons(btn_agree, btn_refresh)
     return 'Проверьте ваш заказ перед отправкой.\n' + order, 15, kbrd.collect()
 
+@vk_bot.handle(15)
+def fiveteen_default(data):
+    user_id = data['object']['message']['from_id']
+    user = User.objects.get(user_id=int(user_id))
+    basket = Basket.objects.get(user_id=int(user_id))
+    adress = user.adress.split(', ')
+    street = adress[0].split(' - ')[-1]
+    house = adress[1].split(' - ')[-1]
+    flat = adress[2].split(' - ')[-1]
+    floor = adress[3].split(' - ')[-1]
+    lot, size, num = basket.products.split('x')
+    pay = basket.pay_type
+    delivery_time = basket.delivery_time
+    comment = basket.comment
+    order = 'Ваш заказ: {0} объемом {1} в количестве {2}. Адрес доставки: улица {3}, дом {4}, квартира {5}, этаж {6}. Форма оплаты: {7}. Дата доставки: {8}. Пожелания к заказу: {9}'.format(
+        lot, size, num, street, house, flat, floor, pay, delivery_time, comment)
+    kbrd = keyboard()
+    btn_agree = button(type='text', label='Верно')
+    btn_agree.set_color('positive')
+    btn_agree.collect()
+    btn_refresh = button(type='text', label='Заново')
+    btn_refresh.set_color('negative')
+    btn_refresh.collect()
+    kbrd.add_multi_buttons(btn_agree, btn_refresh)
+    btn_cansel = button(type='text', label='Отмена')
+    btn_cansel.set_color('negative')
+    btn_cansel.collect()
+    btn_back = button(type='text', label='Назад')
+    btn_back.set_color('secondary')
+    btn_back.collect()
+    kbrd.add_multi_buttons(btn_back, btn_cansel)
+    return 'Проверьте ваш заказ перед отправкой.\n' + order, 15, kbrd.collect()
+
 @vk_bot.handle(15, 'заново')
 def refresh_all(data):
     kbrd = keyboard()
@@ -1361,10 +1481,10 @@ def refresh_all(data):
     btn_back = button(type='text', label='Назад')
     btn_back.set_color('secondary')
     btn_back.collect()
-    btn_first_order = button(type='text', label='Заказываю впервые')
+    btn_first_order = button(type='text', label='Впервые')
     btn_first_order.set_color('primary')
     btn_first_order.collect()
-    btn_contract_id = button(type='text', label='По номеру договора')
+    btn_contract_id = button(type='text', label='По договору')
     btn_contract_id.set_color('primary')
     btn_contract_id.collect()
     btn_adress = button(type='text', label='По адресу')
@@ -1444,6 +1564,63 @@ def find_status(data):
         btn_cansel.collect()
         kbrd.add_wide_button(btn_cansel)
         return 'Неправильно указан номер заказа, попробуйте еще раз', 16, kbrd.collect()
+
+@vk_bot.handle(17)
+def save_adress(data):
+    # название улицы - номер дома - номер квартиры - этаж
+    message = data['object']['message']['text']
+    user_id = data['object']['message']['from_id']
+    try:
+        street, house, flat, floor = message.split(' - ')
+        if (not street.isdigit()) and house.isdigit() and flat.isdigit() and floor.isdigit():
+            user = User.objects.get(user_id=int(user_id))
+            user.adress = 'Улица - {0}, номер дома - {1}, номер квартиры - {2}, этаж - {3},'.format(street, house, flat,
+                                                                                                    floor)
+            user.save()
+            kbrd = keyboard()
+            btn_changeadress = button(type='text', label='Сменить адрес')
+            btn_changeadress.set_color('secondary')
+            btn_changeadress.collect()
+            btn_changename = button(type='text', label='Сменить имя')
+            btn_changename.set_color('secondary')
+            btn_changename.collect()
+            btn_changenumber = button(type='text', label='Сменить номер')
+            btn_changenumber.set_color('secondary')
+            btn_changenumber.collect()
+            btn_makebasket = button(type='text', label='Заказ')
+            btn_makebasket.set_color('positive')
+            btn_makebasket.collect()
+            btn_products = button(type='text', label='Товары')
+            btn_products.set_color('primary')
+            btn_products.collect()
+            btn_call = button(type='text', label='Обратный звонок')
+            btn_call.set_color('primary')
+            btn_call.collect()
+            kbrd.add_multi_buttons(btn_makebasket, btn_products)
+            kbrd.add_multi_buttons(btn_changenumber, btn_call)
+            kbrd.add_multi_buttons(btn_changename, btn_changeadress)
+            return 'Ваш адрес изменен)', 0, kbrd.collect()
+        else:
+            kbrd = keyboard()
+            btn_cansel = button(type='text', label='Отмена')
+            btn_cansel.set_color('negative')
+            btn_cansel.collect()
+            btn_back = button(type='text', label='Назад')
+            btn_back.set_color('secondary')
+            btn_back.collect()
+            kbrd.add_multi_buttons(btn_back, btn_cansel)
+            return 'Ваш адрес невалиден, введите его в формате: название улицы - номер дома - номер квартиры - этаж (обратите внимание: пишите через пробел тире пробел)', 17, kbrd.collect()
+    except:
+        kbrd = keyboard()
+        btn_cansel = button(type='text', label='Отмена')
+        btn_cansel.set_color('negative')
+        btn_cansel.collect()
+        btn_back = button(type='text', label='Назад')
+        btn_back.set_color('secondary')
+        btn_back.collect()
+        kbrd.add_multi_buttons(btn_back, btn_cansel)
+        return 'Ваш адрес невалиден, введите его в формате: название улицы - номер дома - номер квартиры - этаж (обратите внимание: пишите через пробел тире пробел)', 17, kbrd.collect()
+
 
 local_debug = False
 
